@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOGO Puzzle Game</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#17133d,#632b91,#087e9b);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+.game {
+  max-width: 450px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #ffffff22;
+  border-radius: 20px;
+}
+h1 { color: yellow; font-size: 40px; }
+button {
+  padding: 15px;
+  margin: 7px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.answer { background: white; color: #222; }
+#next { background: yellow; }
+#popup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000b;
+  justify-content: center;
+  align-items: center;
+}
+.popup-box {
+  background: white;
+  color: #222;
+  padding: 30px;
+  border-radius: 20px;
+  width: 80%;
+  max-width: 350px;
+}
+.popup-box h2 {
+  color: #ed2870;
+  font-size: 48px;
+}
+.popup-box button {
+  background: purple;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+<h1>🧩 BOGO!!!</h1>
+<p>Puzzle Challenge 😂</p>
+
+<p>⭐ Score: <b id="score">0</b></p>
+<p>Question: <b id="number">1</b>/5</p>
+
+<h3 id="question"></h3>
+
+<div id="answers"></div>
+
+<button id="next" disabled>Next Puzzle ➜</button>
+</div>
+
+<div id="popup">
+  <div class="popup-box">
+    <h2>BOGO!!!</h2>
+    <p id="result"></p>
+    <button onclick="closePopup()">HAHA! 😂</button>
+  </div>
+</div>
+
+<!-- SOUND EFFECT -->
+<audio id="sound" src="bungo.mp3" preload="auto"></audio>
+
+<script>
+const puzzles = [
+{
+q:"Ano ang susunod? 2, 4, 6, 8, ___",
+a:["9","10","12","14"], correct:1
+},
+{
+q:"May 3 mansanas ka. Kinuha mo ang 2. Ilan ang hawak mo?",
+a:["1","2","3","5"], correct:1
+},
+{
+q:"Alin ang hindi hayop?",
+a:["Pusa","Aso","Ibon","Mesa"], correct:3
+},
+{
+q:"Kung kahapon ay Lunes, anong araw ngayon?",
+a:["Linggo","Martes","Miyerkules","Huwebes"], correct:1
+},
+{
+q:"Ano ang may kamay pero hindi pumapalakpak?",
+a:["Orasan","Puno","Sapatos","Baso"], correct:0
+}
+];
+
+let index = 0;
+let score = 0;
+let answered = false;
+
+function loadPuzzle() {
+  answered = false;
+
+  document.getElementById("number").textContent = index+1;
+  document.getElementById("score").textContent = score;
+  document.getElementById("question").textContent = puzzles[index].q;
+  document.getElementById("next").disabled = true;
+
+  const box = document.getElementById("answers");
+  box.innerHTML = "";
+
+  puzzles[index].a.forEach((answer,i)=>{
+    let btn = document.createElement("button");
+    btn.className = "answer";
+    btn.textContent = answer;
+    btn.onclick = ()=>checkAnswer(i,btn);
+    box.appendChild(btn);
+  });
+}
+
+function checkAnswer(i,button) {
+  if(answered) return;
+  answered = true;
+
+  let correct = i === puzzles[index].correct;
+  let buttons = document.querySelectorAll(".answer");
+
+  buttons.forEach(b=>b.disabled=true);
+
+  if(correct) {
+    score++;
+    button.style.background = "#70f0a0";
+    document.getElementById("result").textContent =
+      "TAMA! BOGO KA PA RIN!!! 😂";
+  } else {
+    button.style.background = "#ff9999";
+    buttons[puzzles[index].correct].style.background = "#70f0a0";
+
+    document.getElementById("result").textContent =
+      "MALI! BOGO!!! HAHAHA! 😂";
+  }
+
+  document.getElementById("score").textContent = score;
+
+  // PLAY SOUND EVERY ANSWER
+  const sound = document.getElementById("sound");
+  sound.currentTime = 0;
+  sound.play().catch(error => {
+    console.log("Hindi ma-play ang audio:", error);
+  });
+
+  document.getElementById("popup").style.display = "flex";
+  document.getElementById("next").disabled = false;
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+document.getElementById("next").onclick = function() {
+  if(index < puzzles.length-1) {
+    index++;
+    loadPuzzle();
+  } else {
+    document.getElementById("question").textContent =
+      "TAPOS NA! Score: "+score+"/5";
+    document.getElementById("answers").innerHTML = "";
+    this.textContent = "PLAY AGAIN 🔄";
+    this.disabled = false;
+    this.onclick = () => {
+      index = 0;
+      score = 0;
+      this.textContent = "Next Puzzle ➜";
+      this.onclick = nextPuzzle;
+      loadPuzzle();
+    };
+  }
+};
+
+function nextPuzzle() {
+  if(index < puzzles.length-1) {
+    index++;
+    loadPuzzle();
+  }
+}
+
+loadPuzzle();
+</script>
+
+</body>
+</html>
